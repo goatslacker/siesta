@@ -37,6 +37,7 @@ exports.load = function (api) {
     response = function (status, data) {
       if (typeof status !== "number") {
         data = status;
+        status = undefined;
       }
 
       status = status || 200;
