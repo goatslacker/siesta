@@ -33,6 +33,7 @@ exports.load = function (api) {
         path = url.parse(req.url).pathname.split("/"),
         action = path[1],
         params = path.splice(2) || [],
+        response = null;
 
     response = function (status, data) {
       if (typeof status !== "number") {
@@ -52,9 +53,13 @@ exports.load = function (api) {
       res.end();
 
       console.log(status + " " + req.method + " " + path.join("/"));
-    },
+    };
 
-    callAPI = function () {
+    response.ok = function (data) {
+      response(200, data);
+    };
+
+    const callAPI = function () {
       api[action][req.method].apply(self, params);
     };
 
