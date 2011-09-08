@@ -1,3 +1,4 @@
+/*global require exports */
 /**
   Copyright (C) 2011 by Josh Perez <josh@goatslacker.com>
 
@@ -27,41 +28,46 @@
 
 const url = require('url');
 
+const useDefaults = function (base) {
+  const defaults = {
+    contentType: 'application/json',
+    statusCode: 200,
+    responseJSON: { message: base.responseText }
+  };
+
+  Object.keys(defaults).forEach(function (key) {
+    if (!base.hasOwnProperty(key)) {
+      base[key] = defaults[key];
+    }
+  });
+
+  return base;
+};
+
 exports.load = function (api) {
   return function (req, res) {
-    var self = this,
-        path = url.parse(req.url).pathname.split("/"),
-        action = path[1],
-        params = path.splice(2) || [],
-        response = null;
+    var path = url.parse(req.url).pathname.split("/");
+    var action = path[1];
+    var params = path.splice(2) || [];
 
-    response = function (status, data) {
-      if (typeof status !== "number") {
-        data = status;
-        status = undefined;
+    const response = function (data) {
+      if (typeof data === "string") {
+        data = { responseText: data };
       }
 
-      status = status || 200;
+      data = useDefaults(data);
 
-      if (typeof data !== "object") {
-        data = { message: data };
-      }
-
-      res.writeHead(status, {'Content-Type': 'application/json'});
-      res.write(JSON.stringify(data), 'utf8');
+      res.writeHead(data.statusCode, { 'Content-Type': data.contentType });
+      res.write(data.contentType === "application/json" ? JSON.stringify(data.responseJSON) : data.responseText, 'utf8');
       res.write("\n", 'utf8');
       res.end();
 
-      console.log(status + " " + req.method + " " + path.join("/"));
-    };
-
-    response.ok = function (data) {
-      response(200, data);
+      console.log(data.statusCode + " " + req.method + " " + path.join("/"));
     };
 
     const callAPI = function () {
-      api[action][req.method].apply(self, params);
-    };
+      api[action][req.method].apply(this, params);
+    }.bind(this);
 
 
     if (api.hasOwnProperty(action) && api[action].hasOwnProperty(req.method)) {
@@ -86,7 +92,10 @@ exports.load = function (api) {
         callAPI();
       }
     } else {
-      response(404, { message: "Method not found" });
+      response({
+        statusCode: 404,
+        responseText: "Method not found"
+      });
     }
   };
 };
