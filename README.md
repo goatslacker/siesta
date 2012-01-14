@@ -14,11 +14,12 @@ NPM
 
     // server.js
 
-    const http = require('http');
-    const api = require('./lib/api');
-    const siesta = require('siesta').load(api);
+    var api = require('./lib/api');
+    var siesta = require('siesta');
 
-    var server = http.createServer(siesta).listen(8080);
+    siesta
+      .use(api)
+      .listen(8080);
 
 #### lib/api.js
 
@@ -27,11 +28,10 @@ NPM
     module.exports = {
       echo: {
         GET: function (response) {
-          response("hello world");
+          response('hello world');
         }
       }
     };
-
 
 #### run it!
 
@@ -41,3 +41,7 @@ NPM
 
     $ curl localhost:8080/hello
     > {"message":"hello world"}
+
+# License
+
+http://josh.mit-license.org

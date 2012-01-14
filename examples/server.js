@@ -1,10 +1,6 @@
-// server.js
+var siesta = require('../');
+var app = siesta.use(__dirname + '/api');
+app.listen(3000);
 
-const http = require('http');
-const api = require('./api');
-const siesta = require('../').load(api);
-
-var server = http.createServer(siesta).listen(8080);
-
-console.log("Server started.");
-console.log("Visit http://localhost:8080/echo for results");
+console.log('Server started.');
+console.log('Visit http://localhost:3000/echo for results');
