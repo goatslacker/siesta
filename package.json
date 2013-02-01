@@ -13,7 +13,7 @@
 
   "dependencies": {
     "crossroads": "*"
-  }
+  },
 
   "engines": {
     "node": ">= 0.4.0"

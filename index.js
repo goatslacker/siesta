@@ -12,7 +12,10 @@ function response(req, res) {
         responseJSON: json
       };
 
-      res.writeHead(data.statusCode, { 'Content-Type': data.contentType });
+      res.writeHead(data.statusCode, {
+        'Content-Type': data.contentType,
+        'Access-Control-Allow-Origin': '*'
+      });
       res.write(JSON.stringify(data.responseJSON), 'utf8');
       res.write('\n', 'utf8');
       res.end();
@@ -39,8 +42,19 @@ siesta.use = function (api) {
 
 siesta.listen = function (port) {
   var server = http.createServer(function (req, res) {
+    if (req.method === 'OPTIONS') {
+      res.writeHead(200, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'X-Requested-With, Content-Type'
+      });
+      return res.end();
+    }
+
     var path = url.parse(req.url).pathname;
+
     crossroads.parse(path, [response(req, res)]);
+    crossroads.resetState();
   });
   server.listen(port || 8080);
 }
