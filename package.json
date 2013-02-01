@@ -1,8 +1,8 @@
 {
   "name": "siesta",
   "author": "Josh Perez <josh@goatslacker.com>",
-  "version": "0.2.0",
-  "description": "Create RESTful services with NodeJS easily",
+  "version": "0.2.9",
+  "description": "prototype RESTful services quickly",
 
   "repository": {
     "type": "git",
@@ -10,6 +10,10 @@
   },
 
   "licenses": ["MIT"],
+
+  "dependencies": {
+    "crossroads": "*"
+  }
 
   "engines": {
     "node": ">= 0.4.0"
