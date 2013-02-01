@@ -31,9 +31,14 @@ siesta.use = function (api) {
   Object.keys(api).forEach(function (route) {
     var handler = api[route];
     if (typeof handler === 'function') {
-      crossroads.addRoute(route, handler);
+      crossroads.addRoute('@GET' + route, handler);
     } else {
-      throw new Error();
+      Object.keys(handler).forEach(function (method) {
+        crossroads.addRoute(
+          '@' + method.toUpperCase() + route,
+          handler[method]
+        );
+      });
     }
   });
 
@@ -53,7 +58,7 @@ siesta.listen = function (port) {
 
     var path = url.parse(req.url).pathname;
 
-    crossroads.parse(path, [response(req, res)]);
+    crossroads.parse('@' + req.method + path, [response(req, res)]);
     crossroads.resetState();
   });
   server.listen(port || 8080);
