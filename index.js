@@ -47,19 +47,46 @@ siesta.use = function (api) {
 
 siesta.listen = function (port) {
   var server = http.createServer(function (req, res) {
-    if (req.method === 'OPTIONS') {
-      res.writeHead(200, {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'X-Requested-With, Content-Type'
-      });
-      return res.end();
+
+    function route(data) {
+      var path = url.parse(req.url).pathname;
+      var args = [response(req, res)];
+      if (data) {
+        args.push(data);
+      }
+      crossroads.parse('@' + req.method + path, args);
+      crossroads.resetState();
     }
 
-    var path = url.parse(req.url).pathname;
+    switch (req.method) {
+      case 'OPTIONS':
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'X-Requested-With, Content-Type'
+        });
+        return res.end();
+      case 'POST':
+      case 'PUT':
+        var data = '';
 
-    crossroads.parse('@' + req.method + path, [response(req, res)]);
-    crossroads.resetState();
+        req.on('data', function (buffer) {
+          data += buffer.toString();
+        });
+
+        req.on('end', function () {
+          var json = {};
+          try {
+            json = JSON.parse(data);
+          } catch (e) { }
+          route(json);
+        });
+        break;
+      case 'GET':
+        route();
+        break;
+    }
+
   });
   server.listen(port || 8080);
 }
