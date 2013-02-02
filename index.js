@@ -5,10 +5,10 @@ var url = require('url');
 
 function response(req, res) {
   return {
-    json: function (json) {
+    json: function (json, statusCode) {
       var data = {
         contentType: 'application/json',
-        statusCode: 200,
+        statusCode: statusCode || 200,
         responseJSON: json
       };
 
@@ -21,6 +21,23 @@ function response(req, res) {
       res.end();
 
       console.log(data.statusCode + ' ' + req.method + ' ' + req.url);
+    },
+
+    empty: function (statusCode) {
+      res.writeHead(statusCode || 200, {
+        'Content-Type': 'text',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.end();
+    },
+
+    error: function (err, statusCode) {
+      res.writeHead(statusCode || 500, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.write(JSON.stringify({ error: err.message }), 'utf8');
+      res.end();
     }
   }
 }
@@ -54,8 +71,17 @@ siesta.listen = function (port) {
       if (data) {
         args.push(data);
       }
-      crossroads.parse('@' + req.method + path, args);
-      crossroads.resetState();
+
+      try {
+        crossroads.parse('@' + req.method + path, args);
+      } catch (e) {
+        res.writeHead(500);
+        res.end();
+
+        console.error(500 + ' ' + req.method + ' ' + e.stack);
+      } finally {
+        crossroads.resetState();
+      }
     }
 
     switch (req.method) {
